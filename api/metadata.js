@@ -1,11 +1,1 @@
-const extractVideoMetadata = (video) => {
-    // Assuming video is an object with necessary properties
-    const title = video.title || 'Untitled';
-    const description = video.description || 'No description available.';
-    const thumbnail = video.thumbnail || 'No thumbnail available.';
-    const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().slice(0, 10)}.mp4`;
-
-    return { title, description, thumbnail, filename };
-};
-
-module.exports = extractVideoMetadata;
+export default function handler(req, res) { if (req.method === 'POST') { const { url } = req.body; if (!url) { return res.status(400).json({ error: 'URL is required' }); } try { let metadata = { title: 'Downloaded Video', description: 'Video from social media', thumbnail: 'https://via.placeholder.com/320x180?text=Video', filename: 'video.mp4' }; if (url.includes('youtube.com') || url.includes('youtu.be')) { metadata = { title: 'Amazing YouTube Video', description: 'Great YouTube content with awesome entertainment value.', thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg', filename: 'Amazing_YouTube_Video.mp4' }; } else if (url.includes('tiktok.com')) { metadata = { title: 'TikTok Dance Challenge', description: 'Join the viral dance challenge! Amazing moves and great music.', thumbnail: 'https://via.placeholder.com/320x180?text=TikTok+Dance', filename: 'TikTok_Dance_Challenge.mp4' }; } else if (url.includes('instagram.com')) { metadata = { title: 'Instagram Reels - Travel Vlog', description: 'Beautiful travel moments captured in Instagram Reels.', thumbnail: 'https://via.placeholder.com/320x180?text=Instagram+Reels', filename: 'Instagram_Travel_Vlog.mp4' }; } return res.status(200).json(metadata); } catch (error) { return res.status(500).json({ error: 'Failed to extract metadata' }); } } else { res.setHeader('Allow', ['POST']); return res.status(405).end(`Method ${req.method} Not Allowed`); } }
