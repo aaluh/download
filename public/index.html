@@ -1,39 +1,391 @@
+cat > public/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Downloader</title>
+    <title>Social Media Video Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        #videoURL {
+            flex: 1;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        #videoURL:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-get-info {
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-get-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .metadata-section {
+            display: none;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            animation: slideIn 0.4s ease;
+        }
+
+        .metadata-section.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .thumbnail-container {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .thumbnail {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .meta-item {
+            margin-bottom: 20px;
+        }
+
+        .meta-label {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 0.85em;
+            text-transform: uppercase;
+        }
+
+        .meta-value {
+            color: #444;
+            line-height: 1.6;
+            padding: 12px 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 25px;
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .error {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #28a745;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .input-section {
+                flex-direction: column;
+            }
+
+            .btn-get-info {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Video Downloader</h1>
-    <div id="videoInfo">
-        <h2 id="videoTitle">Video Title</h2>
-        <img id="videoThumbnail" src="" alt="Video Thumbnail" style="max-width: 100%;" />
-        <p id="videoDescription">Video Description</p>
-        <a id="downloadLink" href="" download>Download Video</a>
+    <div class="container">
+        <h1>🎥 Video Downloader</h1>
+        
+        <div class="input-section">
+            <input 
+                type="text" 
+                id="videoURL" 
+                placeholder="Paste video URL (YouTube, TikTok, Instagram, etc.)"
+            >
+            <button class="btn-get-info" onclick="fetchMetadata()">Get Info</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Fetching video information...</p>
+        </div>
+
+        <div class="message error" id="errorMsg"></div>
+        <div class="message success" id="successMsg"></div>
+
+        <div class="metadata-section" id="metadata">
+            <div class="thumbnail-container">
+                <img id="thumbnail" class="thumbnail" alt="Video Thumbnail">
+            </div>
+            
+            <div class="meta-item">
+                <div class="meta-label">📝 Title</div>
+                <div class="meta-value" id="title">-</div>
+            </div>
+
+            <div class="meta-item">
+                <div class="meta-label">📋 Description</div>
+                <div class="meta-value" id="description">-</div>
+            </div>
+
+            <div class="meta-item">
+                <div class="meta-label">💾 Filename</div>
+                <div class="meta-value" id="filename">-</div>
+            </div>
+
+            <button class="download-btn" onclick="downloadVideo()">⬇️ Download Video</button>
+        </div>
     </div>
 
     <script>
-        function fetchVideoInfo(videoUrl) {
-            // Simulated API response for video information
-            const videoData = {
-                title: 'Sample Video',
-                thumbnail: 'https://via.placeholder.com/150',
-                description: 'This is a sample description of the video.',
-                filename: 'sample_video.mp4'
-            };
+        let videoData = null;
 
-            // Update the DOM with video information
-            document.getElementById('videoTitle').innerText = videoData.title;
-            document.getElementById('videoThumbnail').src = videoData.thumbnail;
-            document.getElementById('videoDescription').innerText = videoData.description;
-            document.getElementById('downloadLink').href = videoUrl;
-            document.getElementById('downloadLink').download = videoData.filename;
+        async function fetchMetadata() {
+            const url = document.getElementById('videoURL').value.trim();
+            
+            if (!url) {
+                showError('Please enter a video URL');
+                return;
+            }
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch('/api/metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch metadata');
+                }
+
+                videoData = await response.json();
+                
+                document.getElementById('title').textContent = videoData.title;
+                document.getElementById('description').textContent = videoData.description;
+                document.getElementById('filename').textContent = videoData.filename;
+                document.getElementById('thumbnail').src = videoData.thumbnail;
+
+                document.getElementById('metadata').classList.add('show');
+                showSuccess('✅ Video information loaded!');
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error fetching video metadata. Check URL and try again.');
+            } finally {
+                showLoading(false);
+            }
         }
 
-        // Example usage
-        fetchVideoInfo('http://example.com/video.mp4');
+        async function downloadVideo() {
+            if (!videoData) {
+                showError('Please fetch video info first');
+                return;
+            }
+
+            const btn = document.querySelector('.download-btn');
+            btn.disabled = true;
+            btn.textContent = 'Downloading...';
+
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        filename: videoData.filename
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Download failed');
+                }
+
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = videoData.filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+
+                showSuccess('✅ Download started!');
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error downloading video. Try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '⬇️ Download Video';
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        function hideError() {
+            document.getElementById('errorMsg').classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMsg');
+            successDiv.textContent = message;
+            successDiv.classList.add('show');
+            setTimeout(() => {
+                successDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        document.getElementById('videoURL').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                fetchMetadata();
+            }
+        });
     </script>
 </body>
 </html>
+EOF
