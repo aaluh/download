@@ -1,1 +1,1 @@
-{\n  \"name\": \"download\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A project to download files\",\n  \"main\": \"index.js\",\n  \"scripts\": {\n    \"test\": \"echo 'Error: no test specified' && exit 1\"\n  },\n  \"dependencies\": {\n    \"ab-downloader\": \"^1.0.0\"\n  }\n}
+{"name": "social-media-video-downloader", "version": "1.0.0", "main": "index.js", "scripts": {"start": "node index.js", "dev": "node index.js"}, "dependencies": {"express": "^4.18.2", "axios": "^1.6.0", "cors": "^2.8.5"}}
